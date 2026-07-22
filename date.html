@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Date & Heure Widget</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: transparent;
+    }
+
+    .widget {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        padding: 25px 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        min-width: 280px;
+    }
+
+    .date {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 12px;
+        text-transform: capitalize;
+    }
+
+    .heure {
+        font-size: 42px;
+        font-weight: 700;
+        color: #2b6cb0;
+        letter-spacing: 2px;
+    }
+
+    .jour {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #888;
+    }
+</style>
+
+</head>
+
+<body>
+
+<div class="widget">
+
+    <div class="date" id="date"></div>
+
+    <div class="heure" id="heure"></div>
+
+    <div class="jour">
+        Mise à jour automatique
+    </div>
+
+</div>
+
+
+<script>
+
+function afficherDateHeure(){
+
+    const maintenant = new Date();
+
+    const optionsDate = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    };
+
+    const date = maintenant.toLocaleDateString(
+        "fr-FR",
+        optionsDate
+    );
+
+
+    const heure = maintenant.toLocaleTimeString(
+        "fr-FR",
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        }
+    );
+
+
+    document.getElementById("date").textContent = date;
+
+    document.getElementById("heure").textContent = heure;
+
+}
+
+
+afficherDateHeure();
+
+setInterval(afficherDateHeure, 1000);
+
+
+</script>
+
+</body>
+</html>
