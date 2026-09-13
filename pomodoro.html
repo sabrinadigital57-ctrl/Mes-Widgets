@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro — Studio Sabrina</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:transparent;font-family:"Segoe UI",sans-serif;color:#244b70}
+.widget{width:min(420px,94vw);padding:28px;border-radius:28px;background:linear-gradient(145deg,#eaf7ff,#cfeeff);box-shadow:0 14px 35px rgba(70,130,180,.18);text-align:center}
+.badge{display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.7);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
+.mode{font-size:20px;font-weight:700;margin-bottom:8px}.timer{font-size:68px;line-height:1;font-weight:750;letter-spacing:2px;margin:8px 0 20px;color:#1f5f91}
+.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.btn{border:0;border-radius:14px;padding:11px 18px;background:white;color:#245d88;font-weight:700;cursor:pointer;box-shadow:0 5px 14px rgba(70,130,180,.12)}.btn.primary{background:#6eb6e8;color:white}.btn:hover{transform:translateY(-1px)}
+.settings{margin-top:20px;padding-top:18px;border-top:1px solid rgba(36,75,112,.14);text-align:left}.settings summary{cursor:pointer;font-weight:700;margin-bottom:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700}.field input{border:1px solid rgba(36,75,112,.16);border-radius:10px;padding:9px;background:rgba(255,255,255,.8);color:#244b70}.hint{font-size:11px;opacity:.7;margin-top:10px;text-align:center}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="badge">Studio Sabrina</div>
+  <div class="mode" id="mode">Temps de travail</div>
+  <div class="timer" id="timer">20:00</div>
+  <div class="controls">
+    <button class="btn primary" id="start">▶ Démarrer</button>
+    <button class="btn" id="reset">↻ Réinitialiser</button>
+    <button class="btn" id="skip">→ Passer</button>
+  </div>
+  <details class="settings">
+    <summary>⚙ Personnaliser les sessions</summary>
+    <div class="grid">
+      <label class="field">Travail (min)<input id="workInput" type="number" min="1" max="180" value="20"></label>
+      <label class="field">Pause courte (min)<input id="shortInput" type="number" min="1" max="60" value="5"></label>
+      <label class="field">Pause longue (min)<input id="longInput" type="number" min="1" max="120" value="25"></label>
+      <label class="field">Sessions<input id="sessionsInput" type="number" min="1" max="20" value="4"></label>
+    </div>
+    <button class="btn" id="apply" style="margin-top:10px;width:100%">Appliquer les réglages</button>
+    <div class="hint">Par défaut : 20 min travail · 5 min pause · 25 min pause longue · 4 sessions</div>
+  </details>
+</div>
+<script>
+const defaults={work:20,short:5,long:25,sessions:4};
+let settings=JSON.parse(localStorage.getItem('sabrinaPomodoroSettings')||'null')||defaults;
+let mode='work',session=1,running=false,remaining=settings.work*60,timerId=null;
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem('sabrinaPomodoroSettings',JSON.stringify(settings));}
+function loadInputs(){ $('workInput').value=settings.work; $('shortInput').value=settings.short; $('longInput').value=settings.long; $('sessionsInput').value=settings.sessions; }
+function formatTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function render(){ $('timer').textContent=formatTime(remaining); $('mode').textContent=mode==='work'?'Temps de travail':mode==='short'?'Petite pause':'Grande pause'; $('start').textContent=running?'⏸ Pause':'▶ Démarrer'; document.title=`${formatTime(remaining)} — Pomodoro` }
+function nextPhase(){
+  running=false; clearInterval(timerId);
+  if(mode==='work'){
+    if(session>=settings.sessions){mode='long';}else{mode='short';}
+  }else if(mode==='short'){session++;mode='work';}
+  else{session=1;mode='work';}
+  remaining=(mode==='work'?settings.work:mode==='short'?settings.short:settings.long)*60;
+  render();
+}
+function tick(){if(!running)return; if(remaining>0){remaining--;render();}else{nextPhase();}}
+$('start').onclick=()=>{running=!running;if(running)timerId=setInterval(tick,1000);else clearInterval(timerId);render()};
+$('reset').onclick=()=>{running=false;clearInterval(timerId);mode='work';session=1;remaining=settings.work*60;render()};
+$('skip').onclick=nextPhase;
+$('apply').onclick=()=>{settings={work:Math.max(1,+$('workInput').value||20),short:Math.max(1,+$('shortInput').value||5),long:Math.max(1,+$('longInput').value||25),sessions:Math.max(1,+$('sessionsInput').value||4)};save();$('reset').click()};
+loadInputs();render();
+</script>
+</body>
+</html>
